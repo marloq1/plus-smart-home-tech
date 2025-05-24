@@ -1,8 +1,8 @@
-package ru.practicum.collector.handler.sensor.impl;
+package ru.practicum.collector.handler.sensor.rest.impl;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.collector.handler.sensor.BaseSensorEventHandler;
-import ru.practicum.collector.handler.sensor.SensorEventHandler;
+import ru.practicum.collector.handler.sensor.rest.BaseSensorEventHandler;
+import ru.practicum.collector.handler.sensor.rest.SensorEventHandler;
 import ru.practicum.collector.kafka.KafkaEventProducer;
 import ru.practicum.collector.model.sensors.SensorEvent;
 import ru.practicum.collector.model.sensors.SensorEventType;

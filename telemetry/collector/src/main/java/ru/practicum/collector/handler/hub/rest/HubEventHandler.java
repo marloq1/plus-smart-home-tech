@@ -1,4 +1,4 @@
-package ru.practicum.collector.handler.hub;
+package ru.practicum.collector.handler.hub.rest;
 
 import ru.practicum.collector.model.hubs.HubEvent;
 import ru.practicum.collector.model.hubs.HubEventType;
