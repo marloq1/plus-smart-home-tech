@@ -1,8 +1,8 @@
-package ru.practicum.collector.handler.hub.impl;
+package ru.practicum.collector.handler.hub.rest.impl;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.collector.handler.hub.BaseHubEventHandler;
-import ru.practicum.collector.handler.hub.HubMapper;
+import ru.practicum.collector.handler.hub.rest.BaseHubEventHandler;
+import ru.practicum.collector.handler.HubMapper;
 import ru.practicum.collector.kafka.KafkaEventProducer;
 import ru.practicum.collector.model.hubs.HubEvent;
 import ru.practicum.collector.model.hubs.HubEventType;

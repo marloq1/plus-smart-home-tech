@@ -1,12 +1,12 @@
-package ru.practicum.collector.controller;
+package ru.practicum.collector.controller.rest;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.collector.handler.hub.HubEventHandler;
-import ru.practicum.collector.handler.sensor.SensorEventHandler;
+import ru.practicum.collector.handler.hub.rest.HubEventHandler;
+import ru.practicum.collector.handler.sensor.rest.SensorEventHandler;
 import ru.practicum.collector.model.hubs.HubEvent;
 import ru.practicum.collector.model.hubs.HubEventType;
 import ru.practicum.collector.model.sensors.SensorEvent;
