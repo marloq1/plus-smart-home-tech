@@ -1,7 +1,6 @@
-package ru.practicum.collector.kafka;
+package ru.yandex.practicum.kafka;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -18,7 +17,7 @@ import java.util.concurrent.Future;
 
 
 @Component
-public class KafkaEventProducer implements AutoCloseable {
+public class KafkaEventProducer {
 
     private KafkaProducer<String, SpecificRecordBase> producer;
 
@@ -41,22 +40,15 @@ public class KafkaEventProducer implements AutoCloseable {
 
     public Future<RecordMetadata> send(ProducerRecord<String, SpecificRecordBase> record) {
         Future<RecordMetadata> futureResult = producer.send(record);
-        producer.flush();
         return futureResult;
     }
 
-    @PreDestroy
-    public void shutdown() {
-        try {
-            close(); // вызовет flush + close с таймаутом
-        } catch (Exception e) {
-            // логируем, но не бросаем дальше
-            System.err.println("Ошибка при закрытии KafkaProducer: " + e.getMessage());
-        }
+    public void flush() {
+        producer.flush();
     }
 
-    @Override
-    public void close() throws Exception {
+
+    public void close() {
         producer.flush();
         producer.close(Duration.ofSeconds(10));
     }
