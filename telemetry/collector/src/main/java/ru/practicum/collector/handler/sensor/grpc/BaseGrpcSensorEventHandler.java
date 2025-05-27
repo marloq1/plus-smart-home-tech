@@ -29,9 +29,11 @@ public abstract class BaseGrpcSensorEventHandler<T extends SpecificRecordBase> i
                         event.getTimestamp().getNanos()))
                 .setPayload(recordBase).build();
         String eventClass = event.getClass().getSimpleName();
-        log.trace("Сохраняю событие {} связанное с хабом {} в топик {}",
-                eventClass, event.getHubId(), topic);
-        producer.send(new ProducerRecord<>(topic, record));
+        log.info("Сохраняю событие {} c id {} связанное с хабом {} в топик {}",
+                eventClass, event.getId(), event.getHubId(), topic);
+
+        producer.send(new ProducerRecord<>(topic, record.getHubId(), record));
+
 
     }
 

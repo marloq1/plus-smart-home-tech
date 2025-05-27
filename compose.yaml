@@ -33,3 +33,18 @@ services:
                              --partitions 1 --replication-factor 1 --if-not-exists \
                              --bootstrap-server kafka:29092'"
     init: true
+
+  akhq:
+      image: tchiotludo/akhq
+      container_name: akhq
+      ports:
+        - "8080:8080"
+      depends_on:
+        - kafka
+      environment:
+        AKHQ_CONFIGURATION: |
+          akhq:
+            connections:
+              local:
+                properties:
+                  bootstrap.servers: "kafka:29092"
