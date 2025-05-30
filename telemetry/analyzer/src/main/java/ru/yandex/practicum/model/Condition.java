@@ -27,6 +27,6 @@ public class Condition {
     @Enumerated(EnumType.STRING)
     private ConditionOperation operation;
 
-    @Column(name = "value",nullable = false)
+    @Column(name = "value", nullable = false)
     private Integer value;
 }

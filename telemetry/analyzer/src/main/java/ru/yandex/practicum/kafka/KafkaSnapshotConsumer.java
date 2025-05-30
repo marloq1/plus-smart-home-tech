@@ -1,6 +1,5 @@
 package ru.yandex.practicum.kafka;
 
-import deserializer.impl.HubEventDeserializer;
 import deserializer.impl.SensorsSnapshotDeserializer;
 import jakarta.annotation.PostConstruct;
 import org.apache.avro.specific.SpecificRecordBase;

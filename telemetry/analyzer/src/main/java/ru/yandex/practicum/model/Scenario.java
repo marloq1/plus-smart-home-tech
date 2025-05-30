@@ -3,7 +3,6 @@ package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,16 +35,16 @@ public class Scenario {
             table = "scenario_conditions",
             name = "sensor_id"
     )
-    @JoinTable (
+    @JoinTable(
             name = "scenario_conditions",
-            joinColumns = @JoinColumn(name="scenario_id"),
+            joinColumns = @JoinColumn(name = "scenario_id"),
             inverseJoinColumns = @JoinColumn(name = "condition_id")
     )
-    private Map<String,Condition> conditions = new HashMap<>();
+    private Map<String, Condition> conditions = new HashMap<>();
 
     @OneToMany(cascade = CascadeType.PERSIST)
     @MapKeyColumn(
-            table = "scenario_conditions",
+            table = "scenario_actions",
             name = "sensor_id")
     @JoinTable(
             name = "scenario_actions",

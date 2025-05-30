@@ -2,13 +2,16 @@ package ru.yandex.practicum.processors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
+import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
 import ru.yandex.practicum.handler.Handler;
 import ru.yandex.practicum.kafka.KafkaSnapshotConsumer;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
@@ -18,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class SnapshotProcessor {
@@ -29,6 +32,10 @@ public class SnapshotProcessor {
     private static final List<String> TOPICS = List.of("telemetry.snapshots.v1");
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
+
+    @GrpcClient("hub-router")
+    private HubRouterControllerGrpc.HubRouterControllerBlockingStub analyzerStub;
+
     public void start() {
         try {
             consumer.subscribe(TOPICS);
@@ -37,7 +44,11 @@ public class SnapshotProcessor {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
                 int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
-                    handler.handle((SensorsSnapshotAvro) record.value());
+                    List<DeviceActionRequest> requests = handler.handle((SensorsSnapshotAvro) record.value());
+                    for (DeviceActionRequest request : requests) {
+                        var response = analyzerStub.handleDeviceAction(request);
+                        log.info("gRPC ответ получен: {}", response);
+                    }
                     manageOffsets(record, count, consumer);
                     count++;
 

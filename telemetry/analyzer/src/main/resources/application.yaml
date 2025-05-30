@@ -20,7 +20,13 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema.sql
-
+grpc:
+  client:
+    hub-router:
+      address: 'static://localhost:59090'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
 logging:
   level:
     org.springframework.jdbc.datasource.init.ScriptUtils: DEBUG

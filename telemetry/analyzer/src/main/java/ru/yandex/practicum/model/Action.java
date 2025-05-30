@@ -1,10 +1,7 @@
 package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Table(name = "actions")
@@ -12,6 +9,8 @@ import lombok.ToString;
 @Setter
 @ToString
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Action {
 
     @Id
@@ -22,6 +21,6 @@ public class Action {
     @Enumerated(EnumType.STRING)
     private ActionType actionType;
 
-    @Column(name = "value",nullable = false)
+    @Column(name = "value", nullable = false)
     private int value;
 }
