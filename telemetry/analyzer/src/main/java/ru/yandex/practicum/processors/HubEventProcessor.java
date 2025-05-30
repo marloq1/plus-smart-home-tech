@@ -1,4 +1,4 @@
-package ru.yandex.practicum;
+package ru.yandex.practicum.processors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,50 +6,42 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.kafka.KafkaEventConsumer;
-import ru.yandex.practicum.kafka.KafkaEventProducer;
-import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
+import ru.yandex.practicum.handler.Handler;
+import ru.yandex.practicum.kafka.KafkaHubConsumer;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Slf4j
 @Component
+@Slf4j
 @RequiredArgsConstructor
-public class AggregationStarter {
+public class HubEventProcessor implements Runnable {
 
-    private final KafkaEventConsumer consumer;
-    private final KafkaEventProducer producer;
-    private final SnapshotService service;
+    private final KafkaHubConsumer consumer;
+    private final Handler handler;
     private static final Duration CONSUME_ATTEMPT_TIMEOUT = Duration.ofMillis(1000);
-    private static final List<String> TOPICS = List.of("telemetry.sensors.v1");
+    private static final List<String> TOPICS = List.of("telemetry.hubs.v1");
     private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
-    public void start() {
+    @Override
+    public void run() {
         try {
             consumer.subscribe(TOPICS);
             while (true) {
 
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(CONSUME_ATTEMPT_TIMEOUT);
-
                 int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
 
-                    Optional<SensorsSnapshotAvro> snap = service.updateState((SensorEventAvro) record.value());
-                    if (snap.isPresent()) {
-                        producer.send(new ProducerRecord<>("telemetry.snapshots.v1",
-                                snap.get().getHubId(), snap.get()));
-                        log.info("Отправлено сообщение в топик хаба {}, тип датчика {}", snap.get().getHubId(),
-                                snap.get().getSensorsState().get(((SensorEventAvro) record.value())
-                                        .getId()).getData().getClass());
-                        manageOffsets(record, count, consumer);
-                        count++;
-                    }
+                    handler.handle((HubEventAvro) record.value());
+                    manageOffsets(record, count, consumer);
+                    count++;
 
                 }
                 try {
@@ -60,13 +52,13 @@ public class AggregationStarter {
                 }
             }
 
-        } catch (WakeupException ignored) {
+        } catch (
+                WakeupException ignored) {
         } catch (Exception e) {
             log.error("Ошибка во время обработки событий от датчиков", e);
         } finally {
 
             try {
-                producer.flush();
 
                 consumer.commitAsync();
 
@@ -75,13 +67,13 @@ public class AggregationStarter {
                 log.info("Закрываем консьюмер");
                 consumer.close();
                 log.info("Закрываем продюсер");
-                producer.close();
             }
         }
+
     }
 
     private static void manageOffsets(ConsumerRecord<String, SpecificRecordBase> record, int count,
-                                      KafkaEventConsumer consumer) {
+                                      KafkaHubConsumer consumer) {
         currentOffsets.put(
                 new TopicPartition(record.topic(), record.partition()),
                 new OffsetAndMetadata(record.offset() + 1)
@@ -95,7 +87,6 @@ public class AggregationStarter {
             });
         }
     }
+
+
 }
-
-
-
