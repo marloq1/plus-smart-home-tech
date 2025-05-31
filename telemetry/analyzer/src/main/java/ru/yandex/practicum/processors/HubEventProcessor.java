@@ -66,7 +66,6 @@ public class HubEventProcessor implements Runnable {
             } finally {
                 log.info("Закрываем консьюмер");
                 consumer.close();
-                log.info("Закрываем продюсер");
             }
         }
 
