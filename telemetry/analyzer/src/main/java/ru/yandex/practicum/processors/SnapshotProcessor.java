@@ -75,7 +75,6 @@ public class SnapshotProcessor {
             } finally {
                 log.info("Закрываем консьюмер");
                 consumer.close();
-                log.info("Закрываем продюсер");
             }
         }
 
