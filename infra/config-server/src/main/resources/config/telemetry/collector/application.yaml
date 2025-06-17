@@ -1,7 +1,5 @@
 kafka.bootstrap-servers:
   localhost:9092
-server:
-  port: 8082
 grpc:
   server:
     port: 59091
