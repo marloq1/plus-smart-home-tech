@@ -9,6 +9,8 @@ services:
       - POSTGRES_USER=dbuser
       - POSTGRES_DB=smart-home
       - TZ=Europe/Moscow
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s

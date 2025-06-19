@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS carts (
 );
 
 CREATE TABLE IF NOT EXISTS cart_products (
-  product_id VARCHAR NOT NULL,
+  product_id VARCHAR(100) NOT NULL,
   quantity BIGINT,
-  cart_id VARCHAR REFERENCES carts(cart_id) ON DELETE CASCADE
+  cart_id VARCHAR(100) REFERENCES carts(cart_id) ON DELETE CASCADE,
+  PRIMARY KEY (cart_id, product_id)
 );
