@@ -1,6 +1,6 @@
 package ru.yandex.practicum.dto;
 
-public enum State {
+public enum OrderState {
     NEW,
     ON_PAYMENT,
     ON_DELIVERY,

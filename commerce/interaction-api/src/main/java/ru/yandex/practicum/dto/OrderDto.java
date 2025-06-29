@@ -13,7 +13,7 @@ public class OrderDto {
     private Map<String, Long> products;
     private String paymentId;
     private String deliveryId;
-    private State state;
+    private OrderState orderState;
     private Double deliveryWeight;
     private Double deliveryVolume;
     private Boolean fragile;

@@ -76,6 +76,7 @@ public class WareHouseService {
         return bookedProduct;
     }
 
+    @Transactional
     public void returnProducts(Map<String, Long> products) {
         List<WareHouseProduct> productsFromDb = wareHouseRepository.findByProductIdIn(products.keySet());
         for (Map.Entry<String, Long> entry : products.entrySet()) {
@@ -88,6 +89,7 @@ public class WareHouseService {
         wareHouseRepository.saveAll(productsFromDb);
     }
 
+    @Transactional
     public void shippedToDelivery(ShippedToDeliveryRequest request) {
         OrderDeliveryId id = new OrderDeliveryId(request.getOrderId(), request.getDeliveryId());
         OrderDelivery orderDelivery = new OrderDelivery();

@@ -37,7 +37,7 @@ public class OrderService {
         Order order = Order.builder()
                 .orderId(UUID.randomUUID().toString())
                 .shoppingCartId(request.getShoppingCart().getShoppingCartId())
-                .state(State.NEW)
+                .orderState(OrderState.NEW)
                 .userName(UUID.randomUUID().toString())
                 .products(request.getShoppingCart().getProducts())
                 .build();
@@ -54,7 +54,7 @@ public class OrderService {
     public void returnOrder(ProductReturnRequest request) {
         Order order = getOrder(request.getOrderId());
         wareHouseClient.returnProducts(request.getProducts());
-        order.setState(State.PRODUCT_RETURNED);
+        order.setOrderState(OrderState.PRODUCT_RETURNED);
         orderRepository.save(order);
 
     }
@@ -62,7 +62,7 @@ public class OrderService {
     @Transactional
     public void successfulDelivery(String orderId) {
         Order order = getOrder(orderId);
-        order.setState(State.DELIVERED);
+        order.setOrderState(OrderState.DELIVERED);
         orderRepository.save(order);
 
     }
@@ -70,21 +70,21 @@ public class OrderService {
     @Transactional
     public void failedDelivery(String orderId) {
         Order order = getOrder(orderId);
-        order.setState(State.DELIVERY_FAILED);
+        order.setOrderState(OrderState.DELIVERY_FAILED);
         orderRepository.save(order);
     }
 
     @Transactional
     public void successfulPayment(String orderId) {
         Order order = getOrder(orderId);
-        order.setState(State.PAID);
+        order.setOrderState(OrderState.PAID);
         orderRepository.save(order);
     }
 
     @Transactional
     public void failedPayment(String orderId) {
         Order order = getOrder(orderId);
-        order.setState(State.PAYMENT_FAILED);
+        order.setOrderState(OrderState.PAYMENT_FAILED);
         orderRepository.save(order);
     }
 
@@ -97,13 +97,13 @@ public class OrderService {
         order.setDeliveryVolume(bookedProduct.getDeliveryVolume());
         order.setDeliveryWeight(bookedProduct.getDeliveryWeight());
         order.setFragile(bookedProduct.getFragile());
-        order.setState(State.ASSEMBLED);
+        order.setOrderState(OrderState.ASSEMBLED);
         return orderMapper.toOrderDto(orderRepository.save(order));
     }
 
     public OrderDto assemblyFailed(String orderId) {
         Order order = getOrder(orderId);
-        order.setState(State.ASSEMBLY_FAILED);
+        order.setOrderState(OrderState.ASSEMBLY_FAILED);
         return orderMapper.toOrderDto(orderRepository.save(order));
     }
 
@@ -136,7 +136,7 @@ public class OrderService {
     @Transactional
     public OrderDto completeOrder(String orderId) {
         Order order = getOrder(orderId);
-        order.setState(State.COMPLETED);
+        order.setOrderState(OrderState.COMPLETED);
         return orderMapper.toOrderDto(orderRepository.save(order));
     }
 

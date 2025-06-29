@@ -2,7 +2,7 @@ package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.yandex.practicum.dto.State;
+import ru.yandex.practicum.dto.OrderState;
 
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class Order {
 
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
-    private State state;
+    private OrderState orderState;
 
     @Column(name = "delivery_weight", nullable = false)
     private Double deliveryWeight;
