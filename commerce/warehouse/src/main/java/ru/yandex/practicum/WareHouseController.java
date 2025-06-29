@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping(path = "/api/v1/warehouse")
 @RequiredArgsConstructor
-public class WareHouseCollector {
+public class WareHouseController {
 
     private final WareHouseService wareHouseService;
 
@@ -30,6 +32,21 @@ public class WareHouseCollector {
     @GetMapping("/address")
     public AddressDto getAddress() {
         return new AddressDto();
+    }
+
+    @PostMapping("/assembly")
+    public BookedProductDto assemblyOrder(@RequestBody AssemblyProductsForOrderRequest request) {
+        return wareHouseService.assemblyOrder(request);
+    }
+
+    @PostMapping("/shipped")
+    public void shippedToDelivery(@RequestBody ShippedToDeliveryRequest request) {
+        wareHouseService.shippedToDelivery(request);
+    }
+
+    @PostMapping("/return")
+    public void returnProducts(@RequestBody Map<String, Long> products) {
+        wareHouseService.returnProducts(products);
     }
 
 }

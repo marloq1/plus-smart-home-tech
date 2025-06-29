@@ -7,6 +7,9 @@ import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.DuplicateProductException;
 import ru.yandex.practicum.exception.ProductIdNotFoundException;
 import ru.yandex.practicum.exception.ProductInShoppingCartLowQuantityInWarehouseException;
+import ru.yandex.practicum.feign.OrderClient;
+import ru.yandex.practicum.model.OrderDelivery;
+import ru.yandex.practicum.model.OrderDeliveryId;
 import ru.yandex.practicum.model.WareHouseProduct;
 import ru.yandex.practicum.model.WareHouseMapper;
 
@@ -20,13 +23,15 @@ public class WareHouseService {
 
     private final WareHouseMapper wareHouseMapper;
     private final WareHouseRepository wareHouseRepository;
+    private final OrderClient orderClient;
+    private final OrderDeliveryRepository orderDeliveryRepository;
 
 
     @Transactional
     public void addProductToWareHouse(NewProductInWarehouseRequest request) {
         if (getProduct(request.getProductId()).isEmpty()) {
             WareHouseProduct wareHouseProduct = wareHouseMapper.toEntity(request);
-            wareHouseProduct.setQuantity(1);
+            wareHouseProduct.setQuantity(1L);
             wareHouseRepository.save(wareHouseProduct);
         } else {
             throw new DuplicateProductException("Предмет с таким id уже есть на складе");
@@ -45,16 +50,63 @@ public class WareHouseService {
     }
 
     public BookedProductDto checkProducts(ShoppingCartDto shoppingCartDto) {
-        List<WareHouseProduct> products = wareHouseRepository.findByProductIdIn(shoppingCartDto.getProducts().keySet());
+        List<WareHouseProduct> productsFromDb = wareHouseRepository.findByProductIdIn(shoppingCartDto
+                .getProducts().keySet());
+        return check(shoppingCartDto.getProducts(), productsFromDb);
+    }
+
+    @Transactional
+    public BookedProductDto assemblyOrder(AssemblyProductsForOrderRequest request) {
+        List<WareHouseProduct> productsFromDb = wareHouseRepository.findByProductIdIn(request.getProducts().keySet());
+        BookedProductDto bookedProduct;
+        try {
+            bookedProduct = check(request.getProducts(), productsFromDb);
+        } catch (ProductInShoppingCartLowQuantityInWarehouseException e) {
+            orderClient.assemblyFailed(request.getOrderId());
+            throw new ProductInShoppingCartLowQuantityInWarehouseException("Недостаточно товара на складе");
+        }
+        for (Map.Entry<String, Long> entry : request.getProducts().entrySet()) {
+            for (WareHouseProduct product : productsFromDb) {
+                if (product.getProductId().equals(entry.getKey())) {
+                    product.setQuantity(product.getQuantity() - entry.getValue());
+                }
+            }
+        }
+        wareHouseRepository.saveAll(productsFromDb);
+        return bookedProduct;
+    }
+
+    @Transactional
+    public void returnProducts(Map<String, Long> products) {
+        List<WareHouseProduct> productsFromDb = wareHouseRepository.findByProductIdIn(products.keySet());
+        for (Map.Entry<String, Long> entry : products.entrySet()) {
+            for (WareHouseProduct product : productsFromDb) {
+                if (product.getProductId().equals(entry.getKey())) {
+                    product.setQuantity(product.getQuantity() + entry.getValue());
+                }
+            }
+        }
+        wareHouseRepository.saveAll(productsFromDb);
+    }
+
+    @Transactional
+    public void shippedToDelivery(ShippedToDeliveryRequest request) {
+        OrderDeliveryId id = new OrderDeliveryId(request.getOrderId(), request.getDeliveryId());
+        OrderDelivery orderDelivery = new OrderDelivery();
+        orderDelivery.setId(id);
+        orderDeliveryRepository.save(orderDelivery);
+    }
+
+    private BookedProductDto check(Map<String, Long> products, List<WareHouseProduct> productsFromDb) {
         Double deliveryWeight = 0.0;
         Double deliveryVolume = 0.0;
         Boolean fragile = false;
 
-        if (products == null || !(products.size() == shoppingCartDto.getProducts().keySet().size())) {
+        if (productsFromDb == null || !(productsFromDb.size() == products.keySet().size())) {
             throw new ProductInShoppingCartLowQuantityInWarehouseException("Недостаточно товара на складе");
         }
-        for (Map.Entry<String, Long> entry : shoppingCartDto.getProducts().entrySet()) {
-            for (WareHouseProduct product : products) {
+        for (Map.Entry<String, Long> entry : products.entrySet()) {
+            for (WareHouseProduct product : productsFromDb) {
                 if (product.getProductId().equals(entry.getKey())) {
                     if (product.getQuantity() >= entry.getValue()) {
                         deliveryWeight += product.getWeight();

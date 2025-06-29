@@ -16,9 +16,9 @@ public class ErrorHandler {
         return new ErrorResponse("UNAUTHORIZED", "User is not authorized.", e.getMessage());
     }
 
-    @ExceptionHandler(CartNotFoundException.class)
+    @ExceptionHandler({CartNotFoundException.class,NoDeliveryFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(final CartNotFoundException e) {
+    public ErrorResponse handleNotFound(final RuntimeException e) {
         return new ErrorResponse("NOT FOUND", "Cart was not found", e.getMessage());
     }
 
@@ -29,7 +29,8 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler({ProductIdNotFoundException.class, DuplicateProductException.class,
-            ProductInShoppingCartLowQuantityInWarehouseException.class})
+            ProductInShoppingCartLowQuantityInWarehouseException.class,NoOrderFoundException.class,
+            NotEnoughInfoInOrderToCalculateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleProductIdNotFound(final RuntimeException e) {
         return new ErrorResponse("BAD REQUEST", "Id violation", e.getMessage());

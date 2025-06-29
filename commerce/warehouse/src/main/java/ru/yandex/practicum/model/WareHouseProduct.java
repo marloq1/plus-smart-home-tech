@@ -29,5 +29,5 @@ public class WareHouseProduct {
 
     private Double weight;
 
-    private Integer quantity;
+    private Long quantity;
 }
